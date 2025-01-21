@@ -1,32 +1,35 @@
 :root {
-    --base-padding: 2rem;
     --nav-height: 70px;
-    --transition-timing: 0.5s ease;
+    --transition-timing: 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 html {
     scroll-behavior: smooth;
-    scroll-snap-type: y mandatory;
-    overflow-y: scroll;
+    overflow-y: hidden;
 }
 
 body {
     margin: 0;
     padding: 0;
     font-family: 'Helvetica', sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background: #fff;
-    overflow-x: hidden;
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar {
+    display: none;
 }
 
 .main-nav {
     position: fixed;
     top: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 1rem 0;
+    background: rgba(255, 255, 255, 0.98);
     z-index: 1000;
+    padding: 1rem 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
@@ -44,6 +47,7 @@ body {
     text-decoration: none;
     transition: color var(--transition-timing);
     padding: 0.5rem 1rem;
+    white-space: nowrap;
 }
 
 .main-nav a.active {
@@ -53,11 +57,12 @@ body {
 }
 
 .card {
-    scroll-snap-align: start;
     height: 100vh;
     width: 100%;
-    padding: var(--nav-height) var(--base-padding) var(--base-padding);
+    padding: var(--nav-height) 2rem 2rem;
     box-sizing: border-box;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -95,9 +100,5 @@ body {
         overflow-x: auto;
         padding: 0 1rem;
         justify-content: flex-start;
-    }
-    
-    .skill-grid, .project-grid {
-        grid-template-columns: 1fr;
     }
 }

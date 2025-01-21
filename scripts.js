@@ -1,54 +1,50 @@
 let isScrolling = false;
-let scrollTimeout;
-
-function scrollToSection(target) {
-    const element = document.querySelector(target);
-    if (element) {
-        element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
-}
+let lastScrollTime = 0;
 
 // Navigation click handler
 document.querySelectorAll('.main-nav a').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
         const target = this.getAttribute('href');
-        scrollToSection(target);
+        document.querySelector(target).scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     });
 });
 
-// Scroll detection
+// Discrete scroll handler
+function handleScroll(e) {
+    const now = Date.now();
+    if (isScrolling || (now - lastScrollTime < 800)) return;
+    
+    isScrolling = true;
+    lastScrollTime = now;
+    
+    const delta = Math.sign(e.deltaY || (e.touches ? e.touches[0].clientY : 0));
+    const sections = Array.from(document.querySelectorAll('.card'));
+    const currentIndex = sections.findIndex(section => 
+        section.getBoundingClientRect().top <= window.innerHeight/2
+    );
+
+    let targetIndex = currentIndex + delta;
+    targetIndex = Math.max(0, Math.min(targetIndex, sections.length - 1));
+    
+    sections[targetIndex].scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+
+    setTimeout(() => {
+        isScrolling = false;
+    }, 1000);
+}
+
+// Event listeners
 window.addEventListener('wheel', handleScroll, { passive: false });
 window.addEventListener('touchmove', handleScroll, { passive: false });
 
-function handleScroll(e) {
-    if (isScrolling) return;
-    isScrolling = true;
-    
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-        isScrolling = false;
-    }, 800);
-
-    const delta = Math.sign(e.deltaY || e.touches?.[0].clientY);
-    const sections = Array.from(document.querySelectorAll('.card'));
-    const currentIndex = sections.findIndex(section => {
-        const rect = section.getBoundingClientRect();
-        return rect.top <= window.innerHeight/2 && rect.bottom >= window.innerHeight/2;
-    });
-
-    let targetIndex = currentIndex + Math.sign(delta);
-    targetIndex = Math.max(0, Math.min(targetIndex, sections.length - 1));
-
-    if(targetIndex !== currentIndex) {
-        scrollToSection(`#${sections[targetIndex].id}`);
-    }
-}
-
-// Intersection Observer for active nav
+// Active section detection
 const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         const id = entry.target.id;
@@ -59,13 +55,16 @@ const observer = new IntersectionObserver((entries) => {
             link.classList.remove('active');
         }
     });
-}, { threshold: 0.5 });
+}, { 
+    threshold: 0.5,
+    rootMargin: '0px 0px -50% 0px'
+});
 
 document.querySelectorAll('.card').forEach(card => {
     observer.observe(card);
 });
 
-// Initialize first active link
+// Initialize
 window.addEventListener('load', () => {
     document.querySelector('.main-nav a[href="#profile"]').classList.add('active');
 });
