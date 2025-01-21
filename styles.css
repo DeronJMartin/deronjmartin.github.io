@@ -63,6 +63,7 @@ body::-webkit-scrollbar {
     box-sizing: border-box;
     scroll-snap-align: start;
     scroll-snap-stop: always;
+    scroll-margin-top: var(--nav-height);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -93,6 +94,7 @@ body::-webkit-scrollbar {
 @media (max-width: 768px) {
     .card {
         padding: var(--nav-height) 1rem 1rem;
+        scroll-snap-align: none;
     }
     
     .main-nav ul {

@@ -1,5 +1,61 @@
 let isScrolling = false;
-let lastScrollTime = 0;
+let touchStartY = 0;
+const SCROLL_COOLDOWN = 600;
+
+// Improved scroll handler
+function handleScroll(e) {
+    if (isScrolling) return;
+    isScrolling = true;
+    
+    // Handle touch events
+    if (e.type === 'touchstart') {
+        touchStartY = e.touches[0].clientY;
+        return;
+    }
+    
+    const delta = e.type === 'wheel' 
+        ? Math.sign(e.deltaY)
+        : Math.sign(touchStartY - e.touches[0].clientY);
+
+    processScroll(delta);
+    setTimeout(() => isScrolling = false, SCROLL_COOLDOWN);
+}
+
+// Precise section calculation
+function processScroll(delta) {
+    const sections = Array.from(document.querySelectorAll('.card'));
+    const scrollPos = window.scrollY || window.pageYOffset;
+    const currentIndex = Math.round(scrollPos / window.innerHeight);
+    
+    let targetIndex = currentIndex + delta;
+    targetIndex = Math.max(0, Math.min(targetIndex, sections.length - 1));
+    
+    sections[targetIndex].scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// Event listeners
+window.addEventListener('wheel', handleScroll, { passive: false });
+window.addEventListener('touchstart', (e) => touchStartY = e.touches[0].clientY);
+window.addEventListener('touchmove', handleScroll, { passive: false });
+
+// Accurate active section detection
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        const id = entry.target.id;
+        const link = document.querySelector(`a[href="#${id}"]`);
+        entry.isIntersecting 
+            ? link.classList.add('active') 
+            : link.classList.remove('active');
+    });
+}, { 
+    threshold: 0.75,
+    rootMargin: '-70px 0px -25% 0px' // Accounts for nav height
+});
+
+document.querySelectorAll('.card').forEach(card => observer.observe(card));
 
 // Navigation click handler
 document.querySelectorAll('.main-nav a').forEach(anchor => {
@@ -11,60 +67,4 @@ document.querySelectorAll('.main-nav a').forEach(anchor => {
             block: 'start'
         });
     });
-});
-
-// Discrete scroll handler
-function handleScroll(e) {
-    const now = Date.now();
-    if (isScrolling || (now - lastScrollTime < 800)) return;
-    
-    isScrolling = true;
-    lastScrollTime = now;
-    
-    const delta = Math.sign(e.deltaY || (e.touches ? e.touches[0].clientY : 0));
-    const sections = Array.from(document.querySelectorAll('.card'));
-    const currentIndex = sections.findIndex(section => 
-        section.getBoundingClientRect().top <= window.innerHeight/2
-    );
-
-    let targetIndex = currentIndex + delta;
-    targetIndex = Math.max(0, Math.min(targetIndex, sections.length - 1));
-    
-    sections[targetIndex].scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
-
-    setTimeout(() => {
-        isScrolling = false;
-    }, 1000);
-}
-
-// Event listeners
-window.addEventListener('wheel', handleScroll, { passive: false });
-window.addEventListener('touchmove', handleScroll, { passive: false });
-
-// Active section detection
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        const id = entry.target.id;
-        const link = document.querySelector(`a[href="#${id}"]`);
-        if(entry.isIntersecting) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
-    });
-}, { 
-    threshold: 0.5,
-    rootMargin: '0px 0px -50% 0px'
-});
-
-document.querySelectorAll('.card').forEach(card => {
-    observer.observe(card);
-});
-
-// Initialize
-window.addEventListener('load', () => {
-    document.querySelector('.main-nav a[href="#profile"]').classList.add('active');
 });
