@@ -1,26 +1,33 @@
 :root {
-    --base-padding: 1.5rem;
-    --card-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    --transition-timing: 0.3s ease;
+    --base-padding: 2rem;
+    --nav-height: 70px;
+    --transition-timing: 0.5s ease;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
 }
 
 body {
+    margin: 0;
+    padding: 0;
     font-family: 'Helvetica', sans-serif;
     line-height: 1.6;
-    background: #fff;
     color: #333;
-    margin: 0;
-    padding-top: 70px;
+    background: #fff;
+    overflow-x: hidden;
 }
 
 .main-nav {
     position: fixed;
     top: 0;
     width: 100%;
-    background: #fff;
-    padding: 1rem;
-    box-shadow: var(--card-shadow);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem 0;
     z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .main-nav ul {
@@ -36,6 +43,7 @@ body {
     color: #666;
     text-decoration: none;
     transition: color var(--transition-timing);
+    padding: 0.5rem 1rem;
 }
 
 .main-nav a.active {
@@ -44,57 +52,33 @@ body {
     border-bottom: 2px solid #333;
 }
 
-.portfolio-grid {
+.card {
+    scroll-snap-align: start;
+    height: 100vh;
+    width: 100%;
+    padding: var(--nav-height) var(--base-padding) var(--base-padding);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.skill-grid, .project-grid {
     display: grid;
     gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-    grid-template-areas:
-        "profile profile"
-        "education experience"
-        "skills projects";
-    grid-template-columns: repeat(2, 1fr);
-}
-
-.card {
-    background: #f8f8f8;
-    padding: var(--base-padding);
-    border-radius: 8px;
-    box-shadow: var(--card-shadow);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: 
-        opacity 0.6s ease-out,
-        transform 0.6s ease-out;
-}
-
-.card.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.profile {
-    grid-area: profile;
-    text-align: center;
-    border-bottom: 2px solid #333;
-}
-
-.contact p {
-    margin: 0.5rem 0;
-    color: #666;
-}
-
-.skill-categories {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
 .project-link {
     display: inline-block;
     padding: 0.5rem 1rem;
-    background: #e0e0e0;
+    background: #f0f0f0;
     color: #333;
     text-decoration: none;
     border-radius: 4px;
@@ -102,33 +86,18 @@ body {
 }
 
 @media (max-width: 768px) {
-    .portfolio-grid {
-        grid-template-areas:
-            "profile"
-            "education"
-            "experience"
-            "skills"
-            "projects";
-        grid-template-columns: 1fr;
+    .card {
+        padding: var(--nav-height) 1rem 1rem;
     }
     
     .main-nav ul {
-        flex-wrap: wrap;
         gap: 1rem;
-    }
-}
-
-@media print {
-    .main-nav {
-        display: none;
+        overflow-x: auto;
+        padding: 0 1rem;
+        justify-content: flex-start;
     }
     
-    .portfolio-grid {
-        display: block;
-    }
-    
-    .card {
-        box-shadow: none;
-        page-break-inside: avoid;
+    .skill-grid, .project-grid {
+        grid-template-columns: 1fr;
     }
 }
