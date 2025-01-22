@@ -1,8 +1,6 @@
 let currentPosition = 0;
 let isAnimating = false;
 let touchStartY = 0;
-let lastScrollTime = 0;
-const SCROLL_COOLDOWN = 800; // Time between scrolls (in milliseconds)
 const sections = Array.from(document.querySelectorAll('.card'));
 
 // Initialize sections position
@@ -14,14 +12,12 @@ function initializeSections() {
 
 // Smooth scroll animation
 function smoothScroll(direction) {
-    const now = Date.now();
-    if (isAnimating || (now - lastScrollTime < SCROLL_COOLDOWN)) return;
+    if (isAnimating) return;
     
     const newPosition = currentPosition + direction;
     if (newPosition < 0 || newPosition >= sections.length) return;
     
     isAnimating = true;
-    lastScrollTime = now;
     currentPosition = newPosition;
     
     sections.forEach((section, index) => {
@@ -36,18 +32,23 @@ function smoothScroll(direction) {
         document.querySelector(`a[href="#${sections[currentPosition].id}"]`)
             .classList.add('active');
         isAnimating = false;
-    }, SCROLL_COOLDOWN);
+    }, 600); // Matches CSS transition duration
 }
 
-// Debounced wheel handler
-let wheelTimeout;
+// Trackpad/wheel handler
+let isScrolling = false;
 window.addEventListener('wheel', (e) => {
     e.preventDefault();
-    clearTimeout(wheelTimeout);
-    wheelTimeout = setTimeout(() => {
-        const direction = Math.sign(e.deltaY);
-        smoothScroll(direction);
-    }, 100); // Debounce time (100ms)
+    if (isScrolling) return;
+    
+    const direction = Math.sign(e.deltaY);
+    smoothScroll(direction);
+    
+    // Lock scroll during animation
+    isScrolling = true;
+    setTimeout(() => {
+        isScrolling = false;
+    }, 600); // Matches CSS transition duration
 }, { passive: false });
 
 // Touch handlers
