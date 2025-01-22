@@ -1,8 +1,9 @@
 let currentPosition = 0;
 let isAnimating = false;
 let touchStartY = 0;
+let lastScrollTime = 0;
+const SCROLL_COOLDOWN = 600; // Time between scrolls
 const sections = Array.from(document.querySelectorAll('.card'));
-const sectionHeight = window.innerHeight;
 
 // Initialize sections position
 function initializeSections() {
@@ -13,12 +14,14 @@ function initializeSections() {
 
 // Smooth scroll animation
 function smoothScroll(direction) {
-    if (isAnimating) return;
+    const now = Date.now();
+    if (isAnimating || (now - lastScrollTime < SCROLL_COOLDOWN)) return;
     
     const newPosition = currentPosition + direction;
     if (newPosition < 0 || newPosition >= sections.length) return;
     
     isAnimating = true;
+    lastScrollTime = now;
     currentPosition = newPosition;
     
     sections.forEach((section, index) => {
@@ -33,7 +36,7 @@ function smoothScroll(direction) {
         document.querySelector(`a[href="#${sections[currentPosition].id}"]`)
             .classList.add('active');
         isAnimating = false;
-    }, 600);
+    }, SCROLL_COOLDOWN);
 }
 
 // Wheel handler
