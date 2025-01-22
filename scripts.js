@@ -1,51 +1,46 @@
-let isScrolling = false;
+let currentPosition = 0;
+let isAnimating = false;
 let touchStartY = 0;
+const sections = Array.from(document.querySelectorAll('.card'));
+const sectionHeight = window.innerHeight;
 
-function getCurrentSection() {
-    const sections = Array.from(document.querySelectorAll('.card'));
-    let closestSection = null;
-    let closestDistance = Infinity;
-    
-    sections.forEach(section => {
-        const rect = section.getBoundingClientRect();
-        const distance = Math.abs(rect.top);
-        
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closestSection = section;
-        }
+// Initialize sections position
+function initializeSections() {
+    sections.forEach((section, index) => {
+        section.style.transform = `translateY(${index * 100}%)`;
     });
-    
-    return closestSection;
 }
 
-function scrollToSection(direction) {
-    if (isScrolling) return;
-    isScrolling = true;
+// Smooth scroll animation
+function smoothScroll(direction) {
+    if (isAnimating) return;
     
-    const sections = Array.from(document.querySelectorAll('.card'));
-    const currentSection = getCurrentSection();
-    const currentIndex = sections.indexOf(currentSection);
+    const newPosition = currentPosition + direction;
+    if (newPosition < 0 || newPosition >= sections.length) return;
     
-    let targetIndex = currentIndex + direction;
-    targetIndex = Math.max(0, Math.min(targetIndex, sections.length - 1));
+    isAnimating = true;
+    currentPosition = newPosition;
     
-    sections[targetIndex].scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
+    sections.forEach((section, index) => {
+        section.style.transform = `translateY(${(index - currentPosition) * 100}%)`;
     });
     
-    // Reset scroll lock after animation completes
+    // Update active nav after animation
     setTimeout(() => {
-        isScrolling = false;
-    }, 800);
+        document.querySelectorAll('.main-nav a').forEach(link => 
+            link.classList.remove('active')
+        );
+        document.querySelector(`a[href="#${sections[currentPosition].id}"]`)
+            .classList.add('active');
+        isAnimating = false;
+    }, 600);
 }
 
-// Mouse wheel handler
+// Wheel handler
 window.addEventListener('wheel', (e) => {
     e.preventDefault();
     const direction = Math.sign(e.deltaY);
-    scrollToSection(direction);
+    smoothScroll(direction);
 }, { passive: false });
 
 // Touch handlers
@@ -57,34 +52,26 @@ window.addEventListener('touchmove', (e) => {
     e.preventDefault();
     const touchEndY = e.touches[0].clientY;
     const direction = Math.sign(touchStartY - touchEndY);
-    scrollToSection(direction);
     touchStartY = touchEndY;
+    smoothScroll(direction);
 }, { passive: false });
 
 // Navigation click handler
 document.querySelectorAll('.main-nav a').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
-        const target = this.getAttribute('href');
-        document.querySelector(target).scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
+        const targetIndex = sections.findIndex(
+            s => s.id === this.getAttribute('href').slice(1)
+        );
+        const direction = targetIndex - currentPosition;
+        
+        if (direction !== 0) {
+            currentPosition = targetIndex - 1;
+            smoothScroll(1 * Math.sign(direction));
+        }
     });
 });
 
-// Active section detection
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        const id = entry.target.id;
-        const link = document.querySelector(`a[href="#${id}"]`);
-        entry.isIntersecting 
-            ? link.classList.add('active') 
-            : link.classList.remove('active');
-    });
-}, { 
-    threshold: 0.7,
-    rootMargin: '-70px 0px -25% 0px'
-});
-
-document.querySelectorAll('.card').forEach(card => observer.observe(card));
+// Initialize
+initializeSections();
+document.querySelector('.main-nav a[href="#profile"]').classList.add('active');

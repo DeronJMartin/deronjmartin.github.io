@@ -3,24 +3,17 @@
     --transition-timing: 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-html {
-    scroll-behavior: smooth;
-    overflow-y: hidden;
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
-    margin: 0;
-    padding: 0;
     font-family: 'Helvetica', sans-serif;
-    height: 100vh;
-    overflow-y: scroll;
-    scroll-snap-type: y mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-body::-webkit-scrollbar {
-    display: none;
+    position: relative;
 }
 
 .main-nav {
@@ -56,26 +49,31 @@ body::-webkit-scrollbar {
     border-bottom: 2px solid #333;
 }
 
-.card {
-    height: 100vh;
+.sections-container {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
     width: 100%;
-    padding: var(--nav-height) 2rem 2rem;
+    height: calc(100vh - var(--nav-height));
+    overflow: hidden;
+}
+
+.card {
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
     box-sizing: border-box;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: absolute;
+    transition: transform var(--transition-timing);
 }
 
 .content {
     max-width: 800px;
     width: 100%;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: calc(100vh - var(--nav-height));
+    margin: 0 auto;
 }
 
 .skill-grid, .project-grid {
@@ -84,10 +82,19 @@ body::-webkit-scrollbar {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
+.project-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+
 @media (max-width: 768px) {
     .card {
-        padding: var(--nav-height) 1rem 1rem;
-        scroll-snap-align: none;
+        padding: 1rem;
     }
     
     .main-nav ul {
