@@ -2,7 +2,7 @@ let currentPosition = 0;
 let isAnimating = false;
 let touchStartY = 0;
 let lastScrollTime = 0;
-const SCROLL_COOLDOWN = 600; // Time between scrolls
+const SCROLL_COOLDOWN = 800; // Time between scrolls (in milliseconds)
 const sections = Array.from(document.querySelectorAll('.card'));
 
 // Initialize sections position
@@ -39,11 +39,15 @@ function smoothScroll(direction) {
     }, SCROLL_COOLDOWN);
 }
 
-// Wheel handler
+// Debounced wheel handler
+let wheelTimeout;
 window.addEventListener('wheel', (e) => {
     e.preventDefault();
-    const direction = Math.sign(e.deltaY);
-    smoothScroll(direction);
+    clearTimeout(wheelTimeout);
+    wheelTimeout = setTimeout(() => {
+        const direction = Math.sign(e.deltaY);
+        smoothScroll(direction);
+    }, 100); // Debounce time (100ms)
 }, { passive: false });
 
 // Touch handlers
